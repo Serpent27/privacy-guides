@@ -3,6 +3,7 @@ Title: How to spoof (anonymize) your MAC address and hostname automatically at b
 Description: Learn how to spoof (anonymize) your MAC address and hostname automatically at boot on macOS.
 Author: Sun Knudsen <https://github.com/sunknudsen>
 Contributors: Sun Knudsen <https://github.com/sunknudsen>
+Reviewers:
 Publication date: 2020-05-19T00:00:00.000Z
 -->
 
@@ -10,7 +11,7 @@ Publication date: 2020-05-19T00:00:00.000Z
 
 [![How to spoof (anonymize) your MAC address and hostname automatically at boot on macOS - YouTube](how-to-spoof-anonymize-your-mac-address-and-hostname-automatically-at-boot-on-macos.png)](https://www.youtube.com/watch?v=ASXANpr_zX8 "How to spoof (anonymize) your MAC address and hostname automatically at boot on macOS - YouTube")
 
-> Heads up: unfortunately this guide does not work on Macs equipped with the new T2 chip running macOS Mojave. If that’s your case, please consider upgrading to Catalina.
+> Heads-up: unfortunately this guide does not work on Macs equipped with the new T2 chip running macOS Mojave. If that’s your case, please consider upgrading to Catalina.
 
 ## Caveats
 
@@ -39,21 +40,21 @@ export LC_CTYPE=C
 dirname=`dirname "${BASH_SOURCE}"`
 
 # Spoof computer name
-model_name=`system_profiler SPHardwareDataType | awk '/Model Name/ {$1=$2=""; print $0}' | sed -e 's/^[ ]*//'`
 first_name=`sed "$(jot -r 1 1 2048)q;d" $dirname/first_names.txt | sed -e 's/[^a-zA-Z]//g'`
-computer_name=`echo "$first_name’s $model_name"`
+model_name=`system_profiler SPHardwareDataType | awk '/Model Name/ {$1=$2=""; print $0}' | sed -e 's/^[ ]*//'`
+computer_name="$first_name’s $model_name"
 host_name=`echo $computer_name | sed -e 's/’//g' | sed -e 's/ /-/g'`
 sudo scutil --set ComputerName "$computer_name"
 sudo scutil --set LocalHostName "$host_name"
 sudo scutil --set HostName "$host_name"
-echo "Spoofed hostname to $host_name"
+printf "%s\n" "Spoofed hostname to $host_name"
 
 # Spoof MAC address of en0 interface
 mac_address_prefix=`sed "$(jot -r 1 1 768)q;d" $dirname/mac_address_prefixes.txt | sed -e 's/[^A-F0-9:]//g'`
 mac_address_suffix=`openssl rand -hex 3 | sed 's/\(..\)/\1:/g; s/.$//'`
 mac_address=`echo "$mac_address_prefix:$mac_address_suffix" | awk '{print toupper($0)}'`
 sudo ifconfig en0 ether "$mac_address"
-echo "Spoofed MAC address of en0 interface to $mac_address"
+printf "%s\n" "Spoofed MAC address of en0 interface to $mac_address"
 EOF
 ```
 

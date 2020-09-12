@@ -3,6 +3,7 @@ Title: How to encrypt, sign and decrypt messages using PGP on macOS (adding priv
 Description: Learn how to encrypt, sign and decrypt messages using PGP on macOS (adding privacy to email).
 Author: Sun Knudsen <https://github.com/sunknudsen>
 Contributors: Sun Knudsen <https://github.com/sunknudsen>
+Reviewers:
 Publication date: 2020-06-18T00:00:00.000Z
 -->
 
@@ -20,7 +21,7 @@ Publication date: 2020-06-18T00:00:00.000Z
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 ```
 
-### Step 2: disable analytics
+### Step 2: disable Homebrew analytics
 
 ```shell
 brew analytics off

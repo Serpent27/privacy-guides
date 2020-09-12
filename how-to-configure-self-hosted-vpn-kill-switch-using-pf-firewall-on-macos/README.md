@@ -3,6 +3,7 @@ Title: How to configure self-hosted VPN kill switch using PF firewall on macOS
 Description: Learn how to configure self-hosted VPN kill switch using PF firewall on macOS.
 Author: Sun Knudsen <https://github.com/sunknudsen>
 Contributors: Sun Knudsen <https://github.com/sunknudsen>
+Reviewers:
 Publication date: 2020-08-21T15:42:23.029Z
 -->
 
@@ -10,7 +11,7 @@ Publication date: 2020-08-21T15:42:23.029Z
 
 [![How to configure self-hosted VPN kill switch using PF firewall on macOS - YouTube](how-to-configure-self-hosted-vpn-kill-switch-using-pf-firewall-on-macos.png)](https://www.youtube.com/watch?v=wsYYGrEXWnk "How to configure self-hosted VPN kill switch using PF firewall on macOS - YouTube")
 
-> Heads up: when following this guide, IKEv2/IPsec VPNs will likely be unresponsive for about 60 seconds at boot and wake. Not sure what causes this issue. Please submit a [PR](https://github.com/sunknudsen/privacy-guides/pulls) if you know how to fix it!
+> Heads-up: when following this guide, IKEv2/IPsec VPNs will likely be unresponsive for about 60 seconds at boot and wake. Not sure what causes this issue. Please submit a [PR](https://github.com/sunknudsen/privacy-guides/pulls) if you know how to fix it!
 
 ## Requirements
 
@@ -49,7 +50,7 @@ Status: Enabled
 
 ### Step 3: backup and override `/etc/pf.conf`
 
-> Heads up: software updates will likely restore `/etc/pf.conf` to default. Remember to check `/etc/pf.conf` using `cat /etc/pf.conf` after updates and test kill switch.
+> Heads-up: software updates will likely restore `/etc/pf.conf` to default. Remember to check `/etc/pf.conf` using `cat /etc/pf.conf` after updates and test kill switch.
 
 ```shell
 sudo cp /etc/pf.conf /etc/pf.conf.backup
@@ -287,15 +288,13 @@ Use `socketfilterfw` to block specific apps.
 cat << "EOF" > /usr/local/sbin/strict.sh
 #! /bin/sh
 
-set -e
-
 if [ "$(id -u)" != "0" ]; then
-  echo "This script must run as root"
+  printf "%s\n" "This script must run as root"
   exit 1
 fi
 
 green=$'\e[1;32m'
-end=$'\e[0m'
+nc=$'\e[0m'
 
 # /usr/libexec/ApplicationFirewall/socketfilterfw --blockapp /Applications/1Password\ 7.app
 # /usr/libexec/ApplicationFirewall/socketfilterfw --blockapp /usr/local/Cellar/squid/4.8/sbin/squid
@@ -309,9 +308,7 @@ printf "\n"
 
 pfctl -F all -f /etc/pf.conf
 
-printf "\n%s" "${green}Strict mode enabled${end}"
-
-exit 0
+printf "\n${green}%s${nc}\n" "Strict mode enabled"
 EOF
 chmod +x /usr/local/sbin/strict.sh
 ```
@@ -324,15 +321,10 @@ Use `socketfilterfw` to unblock specific apps (useful to allow 1Password’s [lo
 cat << "EOF" > /usr/local/sbin/trusted.sh
 #! /bin/sh
 
-set -e
-
 if [ "$(id -u)" != "0" ]; then
-  echo "This script must run as root"
+  printf "%s\n" "This script must run as root"
   exit 1
 fi
-
-red=$'\e[1;31m'
-end=$'\e[0m'
 
 function disable()
 {
@@ -340,7 +332,10 @@ function disable()
   exit 0
 }
 
-trap disable EXIT
+trap disable INT
+
+red=$'\e[1;31m'
+nc=$'\e[0m'
 
 # /usr/libexec/ApplicationFirewall/socketfilterfw --unblockapp /Applications/1Password\ 7.app
 # /usr/libexec/ApplicationFirewall/socketfilterfw --unblockapp /usr/local/Cellar/squid/4.8/sbin/squid
@@ -354,7 +349,7 @@ printf "\n"
 
 pfctl -F all -f /etc/pf.conf
 
-printf "\n%s\n\n" "${red}Trusted mode enabled (press ctrl+c to disable)${end}"
+printf "\n${red}%s${nc}\n\n" "Trusted mode enabled (press ctrl+c to disable)"
 
 while :
 do
@@ -370,15 +365,10 @@ chmod +x /usr/local/sbin/trusted.sh
 cat << "EOF" > /usr/local/sbin/disabled.sh
 #! /bin/sh
 
-set -e
-
 if [ "$(id -u)" != "0" ]; then
-  echo "This script must run as root"
+  printf "%s\n" "This script must run as root"
   exit 1
 fi
-
-red=$'\e[1;31m'
-end=$'\e[0m'
 
 function disable()
 {
@@ -386,11 +376,14 @@ function disable()
   exit 0
 }
 
-trap disable EXIT
+trap disable INT
+
+red=$'\e[1;31m'
+nc=$'\e[0m'
 
 pfctl -d
 
-printf "\n%s\n\n" "${red}Firewall disabled (press ctrl+c to enable)${end}"
+printf "\n${red}%s${nc}\n\n" "Firewall disabled (press ctrl+c to enable)"
 
 while :
 do
